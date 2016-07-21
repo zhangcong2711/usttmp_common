@@ -130,4 +130,16 @@ public class Topic {
         sb.deleteCharAt(sb.length()-1);
         return sb.toString();
     }
+
+    /**
+     * @return the heat
+     */
+    public double getHeat() {
+        
+        double heat=0;
+        for(WordProbability wp : wordProbabilityMaps){
+            heat+=wp.getProbability();
+        }
+        return heat;
+    }
 }
