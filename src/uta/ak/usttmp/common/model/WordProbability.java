@@ -65,5 +65,12 @@ public class WordProbability {
         
         return (this.getWord().equals(((WordProbability)wp).getWord()));
     }
+
+    @Override
+    public String toString() {
+        return this.getWord() + ":" + this.getProbability();
+    }
+    
+    
     
 }
