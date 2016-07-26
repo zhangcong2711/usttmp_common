@@ -19,6 +19,8 @@ public class Topic {
     private String name;
     private Set<WordProbability> wordProbabilityMaps;
     private String remark;
+    private int seq;
+    private long miningTaskId;
 
     /**
      * @return the name
@@ -141,5 +143,33 @@ public class Topic {
             heat+=wp.getProbability();
         }
         return heat;
+    }
+
+    /**
+     * @return the seq
+     */
+    public int getSeq() {
+        return seq;
+    }
+
+    /**
+     * @param seq the seq to set
+     */
+    public void setSeq(int seq) {
+        this.seq = seq;
+    }
+
+    /**
+     * @return the miningTaskId
+     */
+    public long getMiningTaskId() {
+        return miningTaskId;
+    }
+
+    /**
+     * @param miningTaskId the miningTaskId to set
+     */
+    public void setMiningTaskId(long miningTaskId) {
+        this.miningTaskId = miningTaskId;
     }
 }

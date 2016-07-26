@@ -16,6 +16,9 @@ public class EvolutionRelationship {
     private double similarity;
     private int rankAgainstPreTopicInNextGroup;
     private int rankAgainstNextTopicInPreGroup;
+    private long miningTaskId;
+    private int preTopicSeq;
+    private int nextTopicSeq;
 
     /**
      * @return the preTopic
@@ -85,6 +88,48 @@ public class EvolutionRelationship {
      */
     public void setRankAgainstNextTopicInPreGroup(int rankAgainstNextTopicInPreGroup) {
         this.rankAgainstNextTopicInPreGroup = rankAgainstNextTopicInPreGroup;
+    }
+
+    /**
+     * @return the miningTaskId
+     */
+    public long getMiningTaskId() {
+        return miningTaskId;
+    }
+
+    /**
+     * @param miningTaskId the miningTaskId to set
+     */
+    public void setMiningTaskId(long miningTaskId) {
+        this.miningTaskId = miningTaskId;
+    }
+
+    /**
+     * @return the preTopicSeq
+     */
+    public int getPreTopicSeq() {
+        return preTopicSeq;
+    }
+
+    /**
+     * @param preTopicSeq the preTopicSeq to set
+     */
+    public void setPreTopicSeq(int preTopicSeq) {
+        this.preTopicSeq = preTopicSeq;
+    }
+
+    /**
+     * @return the nextTopicSeq
+     */
+    public int getNextTopicSeq() {
+        return nextTopicSeq;
+    }
+
+    /**
+     * @param nextTopicSeq the nextTopicSeq to set
+     */
+    public void setNextTopicSeq(int nextTopicSeq) {
+        this.nextTopicSeq = nextTopicSeq;
     }
 
     

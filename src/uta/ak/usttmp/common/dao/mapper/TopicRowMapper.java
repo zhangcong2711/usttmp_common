@@ -26,6 +26,8 @@ public class TopicRowMapper implements RowMapper {
         tp.setId(rs.getLong("mme_eid"));
         tp.setName(rs.getString("name"));
         tp.setRemark(rs.getString("remark"));
+        tp.setSeq(rs.getInt("seq_no"));
+        tp.setMiningTaskId(rs.getLong("miningtask_id"));
         
         String content=rs.getString("content");
         String[] wordProbs=content.split(",");

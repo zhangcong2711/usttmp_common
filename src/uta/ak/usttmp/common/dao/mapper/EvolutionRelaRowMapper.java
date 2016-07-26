@@ -45,6 +45,10 @@ public class EvolutionRelaRowMapper implements RowMapper{
         er.setRankAgainstNextTopicInPreGroup(rs.getInt("rank_against_next_topic_in_pre_group"));
         er.setRankAgainstPreTopicInNextGroup(rs.getInt("rank_against_pre_topic_in_next_group"));
         er.setSimilarity(rs.getDouble("similarity"));
+        er.setMiningTaskId(rs.getLong("miningtask_id"));
+        er.setPreTopicSeq(rs.getInt("pre_topic_seq"));
+        er.setNextTopicSeq(rs.getInt("next_topic_seq"));
+        
         
         return er;
     }
