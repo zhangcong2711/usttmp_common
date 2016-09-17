@@ -27,13 +27,16 @@ public class MiningTask {
     private int miningInterval;
     private int topicNum;
     private int keywordNum;
-    private double alpha;
-    private double beta;
     private String tag;
     private int status;
     private int qrtzJobExecCount;
     private int qrtzJobTotalCount;
     private String qrtzJobName;
+    private double alpha;
+    private double beta;
+    private String preprocessComponent;
+    private String miningComponent;
+    private String trackingComponent;
     private String remark;
 
     /**
@@ -149,34 +152,6 @@ public class MiningTask {
     }
 
     /**
-     * @return the alpha
-     */
-    public double getAlpha() {
-        return alpha;
-    }
-
-    /**
-     * @param alpha the alpha to set
-     */
-    public void setAlpha(double alpha) {
-        this.alpha = alpha;
-    }
-
-    /**
-     * @return the beta
-     */
-    public double getBeta() {
-        return beta;
-    }
-
-    /**
-     * @param beta the beta to set
-     */
-    public void setBeta(double beta) {
-        this.beta = beta;
-    }
-
-    /**
      * @return the status
      */
     public int getStatus() {
@@ -245,7 +220,75 @@ public class MiningTask {
     public void setRemark(String remark) {
         this.remark = remark;
     }
-    
-    
+
+    /**
+     * @return the alpha
+     */
+    public double getAlpha() {
+        return alpha;
+    }
+
+    /**
+     * @param alpha the alpha to set
+     */
+    public void setAlpha(double alpha) {
+        this.alpha = alpha;
+    }
+
+    /**
+     * @return the beta
+     */
+    public double getBeta() {
+        return beta;
+    }
+
+    /**
+     * @param beta the beta to set
+     */
+    public void setBeta(double beta) {
+        this.beta = beta;
+    }
+
+    /**
+     * @return the preprocessComponent
+     */
+    public String getPreprocessComponent() {
+        return preprocessComponent;
+    }
+
+    /**
+     * @param preprocessComponent the preprocessComponent to set
+     */
+    public void setPreprocessComponent(String preprocessComponent) {
+        this.preprocessComponent = preprocessComponent;
+    }
+
+    /**
+     * @return the miningComponent
+     */
+    public String getMiningComponent() {
+        return miningComponent;
+    }
+
+    /**
+     * @param miningComponent the miningComponent to set
+     */
+    public void setMiningComponent(String miningComponent) {
+        this.miningComponent = miningComponent;
+    }
+
+    /**
+     * @return the trackingComponent
+     */
+    public String getTrackingComponent() {
+        return trackingComponent;
+    }
+
+    /**
+     * @param trackingComponent the trackingComponent to set
+     */
+    public void setTrackingComponent(String trackingComponent) {
+        this.trackingComponent = trackingComponent;
+    }
     
 }

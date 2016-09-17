@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package uta.ak.usttmp.common.service.impl;
+package uta.ak.usttmp.common.processInterface.impl;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -11,111 +11,32 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
-import uta.ak.usttmp.common.dao.UsttmpDaoSupport;
-import uta.ak.usttmp.common.exception.UsttmpProcessException;
-import uta.ak.usttmp.common.model.Topic;
 import uta.ak.usttmp.common.model.EvolutionRelationship;
+import uta.ak.usttmp.common.model.MiningTask;
+import uta.ak.usttmp.common.model.Topic;
 import uta.ak.usttmp.common.model.WordProbability;
-import uta.ak.usttmp.common.service.TopicEvolutionService;
-import uta.ak.usttmp.common.service.TopicMiningService;
+import uta.ak.usttmp.common.processInterface.TrackingComponent;
 import uta.ak.usttmp.common.util.SetUtil;
 
 /**
  *
  * @author zhangcong
  */
-public class TopicEvolutionServiceImpl extends UsttmpDaoSupport implements TopicEvolutionService {
-    
-    protected static double similarityThreshold = 0.3;
+public class AssociationFilterEvolutionTrackingService implements TrackingComponent {
+
+    protected final static double similarityThreshold = 0.6;
 //    protected static int filterPositionForPreGroup = 3;
-    protected static double ratioThresholdToMaxSimilarity = 0.5;
-    
-    @Autowired
-    private TopicMiningService topicMiningService;
+    protected final static double ratioThresholdToMaxSimilarity = 0.7;
     
     
-    @Override
-    public List<EvolutionRelationship> calculateTopicEvolutionRelationships(long miningTaskId, 
-                                                                            int preTopicSeq, 
-                                                                            int nextTopicSeq) throws Exception {
-        
-        //Clear existed topic evolution rela
-        String clearSQL="DELETE " +
-                        "FROM " +
-                        "	c_topicevolutionrela " +
-                        "WHERE " +
-                        "	miningtask_id =? " +
-                        "AND pre_topic_seq =? " +
-                        "AND next_topic_seq =?";
-        this.getJdbcTemplate().update(clearSQL,
-                                      miningTaskId,
-                                      preTopicSeq,
-                                      nextTopicSeq);
-        
-        List<Topic> preTopics=topicMiningService.getTopics(miningTaskId, preTopicSeq);
-        List<Topic> nextTopics=topicMiningService.getTopics(miningTaskId, nextTopicSeq);
-        
-        if(null==preTopics || preTopics.isEmpty()){
-            
-            UsttmpProcessException upe
-                = new UsttmpProcessException(UsttmpProcessException.TYPE_CALC_EVO_RELA_EXCEPTION);
-            throw upe;
-        }
-        if(null==nextTopics || nextTopics.isEmpty()){
-            UsttmpProcessException upe
-                = new UsttmpProcessException(UsttmpProcessException.TYPE_CALC_EVO_RELA_EXCEPTION);
-            throw upe;
-        }
-        
-        List<EvolutionRelationship> evRelaList = 
-            calculateTopicEvolutionRelationships(preTopics, nextTopics);
-        
-        String insertSql="INSERT INTO `c_topicevolutionrela` (  " +
-                            "	`pre_topic_id`,  " +
-                            "	`next_topic_id`,  " +
-                            "	`rank_against_pre_topic_in_next_group`,  " +
-                            "	`rank_against_next_topic_in_pre_group`,  " +
-                            "	`similarity`  ," +
-                            "	`miningtask_id`  ," +
-                            "	`pre_topic_seq`  ," +
-                            "	`next_topic_seq`  " +
-                            ")  " +
-                            "VALUES  " +
-                            "	(?, ?, ?, ?, ?, ?, ?, ?)";
-        
-        List<Object[]> argsList=new ArrayList<>();
-        
-        for (EvolutionRelationship er : evRelaList){
-            Object[] objarr=new Object[]{er.getPreTopic().getId(),
-                                         er.getNextTopic().getId(),
-                                         er.getRankAgainstPreTopicInNextGroup(),
-                                         er.getRankAgainstNextTopicInPreGroup(),
-                                         er.getSimilarity(),
-                                         miningTaskId,
-                                         preTopicSeq,
-                                         nextTopicSeq};
-            argsList.add(objarr);
-        }
-        this.getJdbcTemplate().batchUpdate(insertSql, argsList);
-        
-        return evRelaList;
-    }
+    
     
     @Override
     @Transactional
-    public List<EvolutionRelationship> calculateTopicEvolutionRelationships(List<Topic> preTopics, 
-                                                                            List<Topic> nextTopics) throws Exception{
-        
-        
-        List<EvolutionRelationship> evRelaList=this.getTopicEvolutionRelationships(preTopics, nextTopics);
-        
-        return evRelaList;
-    }
-    
-    protected List<EvolutionRelationship> getTopicEvolutionRelationships( List<Topic> preTopics,
-                                                                          List<Topic> nextTopics){
+    public List<EvolutionRelationship> getTopicEvolutionRelationships( MiningTask mt,
+                                                                       List<Topic> preTopics,
+                                                                       List<Topic> nextTopics){
         
         //Generate EvolutionRelationship List
         List<EvolutionRelationship> erList = new ArrayList<EvolutionRelationship>();
@@ -159,23 +80,68 @@ public class TopicEvolutionServiceImpl extends UsttmpDaoSupport implements Topic
         //1. Filter by minimum similarity
         for(Iterator<EvolutionRelationship> i =erList.iterator();i.hasNext();){
             EvolutionRelationship ter=i.next();
-            if(TopicEvolutionServiceImpl.similarityThreshold > ter.getSimilarity()){
+            if(AssociationFilterEvolutionTrackingService.similarityThreshold > ter.getSimilarity()){
                 i.remove();
             }
         }
         
-        //2. Filter by minimun ratioThresholdToMaxSimilarity
+        
         List<String> removeList = new ArrayList<String>();
+        
+        //2.1 Filter by inappropriate ER
+        removeList.clear();
+        for(Topic preTp : preTopics){
+            
+            Topic tPostTp=this.getPostTopic(preTp, erList);
+            if(null==tPostTp){
+                continue;
+            }
+//            String preTIDnextTID=preTp.getId() + "," + tPostTp.getId();
+            
+            List<EvolutionRelationship> tERList=
+                    this.getEvolutionRelaByNextTopicOrderBySimilarity(tPostTp, 
+                                                                      erList);
+            
+            boolean removeSign=false;
+            for(EvolutionRelationship tER : tERList){
+                if(tER.getPreTopic().getId()==preTp.getId()){
+                    break;
+                }else{
+                    Topic kPostTp=this.getPostTopic(tER.getPreTopic(), erList);
+                    if(kPostTp==null || kPostTp.getId()!=tPostTp.getId()){
+                        removeSign=true;
+                        break;
+                    }
+                }
+            }
+            if(removeSign){
+                removeER(preTp.getId(),tPostTp.getId(),erList);
+//                removeList.add(preTIDnextTID);
+            }
+        }
+        
+//        for(Iterator<EvolutionRelationship> i =erList.iterator();i.hasNext();){
+//            EvolutionRelationship tEr=i.next();
+//            String preTIDnextTID=tEr.getPreTopic().getId() + "," + tEr.getNextTopic().getId();
+//            if(removeList.contains(preTIDnextTID)){
+//                i.remove();
+//            }
+//        }
+        
+        
+        //2.2 Filter by minimun ratioThresholdToMaxSimilarity
+        removeList.clear();
         for(Iterator<Topic> i=preTopics.iterator();i.hasNext();){
             Topic preT=i.next();
             List<EvolutionRelationship> tErList=this.getEvolutionRelaByPreTopicOrderBySimilarity(preT, erList);
             if(tErList!=null && (!tErList.isEmpty())){
                 double maxSimThreshold=(tErList.get(0)).getSimilarity() *
-                                       TopicEvolutionServiceImpl.ratioThresholdToMaxSimilarity;
+                                       AssociationFilterEvolutionTrackingService.ratioThresholdToMaxSimilarity;
                 for(Iterator<EvolutionRelationship> j=tErList.iterator();j.hasNext();){
                     EvolutionRelationship tEr=j.next();
                     if(maxSimThreshold > tEr.getSimilarity()){
                         removeList.add(tEr.getPreTopic().getId() + "," + tEr.getNextTopic().getId());
+
                     }
                 }
             }
@@ -185,7 +151,7 @@ public class TopicEvolutionServiceImpl extends UsttmpDaoSupport implements Topic
             List<EvolutionRelationship> tErList=this.getEvolutionRelaByNextTopicOrderBySimilarity(nextT, erList);
             if(tErList!=null && (!tErList.isEmpty())){
                 double maxSimThreshold=(tErList.get(0)).getSimilarity() *
-                                       TopicEvolutionServiceImpl.ratioThresholdToMaxSimilarity;
+                                       AssociationFilterEvolutionTrackingService.ratioThresholdToMaxSimilarity;
                 for(Iterator<EvolutionRelationship> j=tErList.iterator();j.hasNext();){
                     EvolutionRelationship tEr=j.next();
                     if(maxSimThreshold > tEr.getSimilarity()){
@@ -202,6 +168,7 @@ public class TopicEvolutionServiceImpl extends UsttmpDaoSupport implements Topic
             }
         }
         
+        /*
         //3. Filter by inappropriate ER
         removeList.clear();
         boolean removePositionStart=false;
@@ -255,12 +222,22 @@ public class TopicEvolutionServiceImpl extends UsttmpDaoSupport implements Topic
             if(removeList.contains(preTIDnextTID)){
                 i.remove();
             }
-        }
+        }*/
         
         return (erList.size()>0) ? erList : null;
     }
     
-    @Override
+    protected void removeER(long preTopicId, long postTopicId, List<EvolutionRelationship> erList){
+        
+        String preTIDnextTID=preTopicId + "," + postTopicId;
+        for(Iterator<EvolutionRelationship> i=erList.iterator();i.hasNext();){
+            EvolutionRelationship er=i.next();
+            if(preTIDnextTID.equals(er.toString())){
+                i.remove();
+            }
+        }
+    }
+    
     public double getSimilarity(Topic tp1, Topic tp2){
         
         Set<String> tp1WordSet=tp1.getWordSet();
@@ -306,6 +283,22 @@ public class TopicEvolutionServiceImpl extends UsttmpDaoSupport implements Topic
            
          //返回相似度  
         return (vectorProduct/(vector1Modulo*vector2Modulo));  
+    }
+    
+    protected Topic getPostTopic(Topic preTopic, List<EvolutionRelationship> erList){
+        
+        List<EvolutionRelationship> postList=getEvolutionRelaByPreTopicOrderBySimilarity(preTopic,erList);
+        
+        return (null!=postList) ? postList.get(0).getNextTopic() : null;
+        
+    }
+    
+    protected Topic getPriorTopic(Topic postTopic, List<EvolutionRelationship> erList){
+        
+        List<EvolutionRelationship> preList=getEvolutionRelaByNextTopicOrderBySimilarity(postTopic,erList);
+        
+        return (null!=preList) ? preList.get(0).getPreTopic() : null;
+        
     }
     
     protected List<EvolutionRelationship> getEvolutionRelaByPreTopicOrderBySimilarity(Topic preTopic,
@@ -356,19 +349,4 @@ public class TopicEvolutionServiceImpl extends UsttmpDaoSupport implements Topic
         }
     }
 
-    /**
-     * @return the topicMiningService
-     */
-    public TopicMiningService getTopicMiningService() {
-        return topicMiningService;
-    }
-
-    /**
-     * @param topicMiningService the topicMiningService to set
-     */
-    public void setTopicMiningService(TopicMiningService topicMiningService) {
-        this.topicMiningService = topicMiningService;
-    }
-
-    
 }

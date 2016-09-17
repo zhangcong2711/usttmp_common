@@ -1,0 +1,24 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package uta.ak.usttmp.common.processInterface;
+
+import java.util.List;
+import uta.ak.usttmp.common.model.EvolutionRelationship;
+import uta.ak.usttmp.common.model.MiningTask;
+import uta.ak.usttmp.common.model.Topic;
+
+/**
+ *
+ * @author zhangcong
+ */
+public interface TrackingComponent {
+    
+    public List<EvolutionRelationship> 
+               getTopicEvolutionRelationships( MiningTask mt,
+                                               List<Topic> preTopics,
+                                               List<Topic> nextTopics) throws Exception;
+    
+}

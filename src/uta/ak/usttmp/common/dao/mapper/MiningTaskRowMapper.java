@@ -26,8 +26,6 @@ public class MiningTaskRowMapper implements RowMapper{
         try {
             MiningTask mt=new MiningTask();
             mt.setId(rs.getLong("mme_eid"));
-            mt.setAlpha(rs.getDouble("alpha"));
-            mt.setBeta(rs.getDouble("beta"));
             
             SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             mt.setStartTime(formatter.parse(rs.getString("starttime")));
@@ -42,7 +40,12 @@ public class MiningTaskRowMapper implements RowMapper{
             mt.setQrtzJobName(rs.getString("qrtz_job_name"));
             mt.setQrtzJobExecCount(rs.getInt("qrtz_job_exec_count"));
             mt.setQrtzJobTotalCount(rs.getInt("qrtz_job_total_count"));
+            mt.setPreprocessComponent(rs.getString("preprocess_component"));
+            mt.setMiningComponent(rs.getString("mining_component"));
+            mt.setTrackingComponent(rs.getString("tracking_component"));
             
+            mt.setAlpha(rs.getDouble("alpha"));
+            mt.setBeta(rs.getDouble("beta"));
             
             return mt;
         } catch (ParseException ex) {

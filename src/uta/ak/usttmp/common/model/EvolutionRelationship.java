@@ -132,6 +132,12 @@ public class EvolutionRelationship {
         this.nextTopicSeq = nextTopicSeq;
     }
 
+    @Override
+    public String toString() {
+        String preTIDnextTID=this.preTopic.getId() + "," + this.nextTopic.getId();
+        return preTIDnextTID;
+    }
+
     
     
     
