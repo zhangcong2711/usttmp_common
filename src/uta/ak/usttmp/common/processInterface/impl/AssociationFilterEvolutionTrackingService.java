@@ -25,9 +25,9 @@ import uta.ak.usttmp.common.util.SetUtil;
  */
 public class AssociationFilterEvolutionTrackingService implements TrackingComponent {
 
-    protected final static double similarityThreshold = 0.6;
+    protected final static double similarityThreshold = 0.7;
 //    protected static int filterPositionForPreGroup = 3;
-    protected final static double ratioThresholdToMaxSimilarity = 0.7;
+    protected final static double ratioThresholdToMaxSimilarity = 0.8;
     
     
     

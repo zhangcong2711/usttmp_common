@@ -6,20 +6,14 @@
 package uta.ak.usttmp.common.textmining;
 
 import cc.mallet.topics.ParallelTopicModel;
-import static cc.mallet.topics.ParallelTopicModel.logger;
-import cc.mallet.topics.TopicAssignment;
 import cc.mallet.types.IDSorter;
-import cc.mallet.types.LabelAlphabet;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
-import net.didion.jwnl.dictionary.Dictionary;
 import uta.ak.usttmp.common.model.Topic;
 
 /**
